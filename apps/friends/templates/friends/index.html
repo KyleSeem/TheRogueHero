@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Friends</title>
+    <meta name="description" content="Coding Dojo, Python II, Django II, travel">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'login_reg/css/style.css' %}">
+  </head>
+  <body>
+    <div class="container">
+      <nav>
+        <a class="btn btn-link" href="{% url 'login_reg:logout' %}" role="button">Logout</a>
+      </nav>
+      <header class="page-header">
+        <h1>Friends List <small>{% if request.session.success %}
+          Welcome {{ request.session.success }}
+        {% endif %}</small></h1>
+      </header>
+
+      <!-- {{ thisUser.id }} {{ thisUser.name }} -->
+  <!-- your Friends List section -->
+      <section>
+        <h4>Here is your list of friends:</h4>
+        <table class="table table-bordered">
+          <thead>
+            <th>Alias</th>
+            <th>Action</th>
+          </thead>
+
+          <tbody>
+            {% for friendship in friendships %}
+              {% if friendship.user.id == thisUser.id %}
+                <tr>
+                  <td>{{ friendship.friend.friend.alias }}</td>
+                  <td>
+                    <form action="{% url 'friends:remove' %}" method="POST">
+                    {% csrf_token %}
+                      <a class="btn btn-link" href="{% url 'friends:show' friendship.friend.friend.id %}">View Profile</a>
+                      <input type="hidden" name="friendship" value="{{ friendship.id }}">
+                      <input class="btn btn-link" type="submit" value="Remove as Friend">
+                    </form>
+                  </td>
+                </tr>
+              {% elif friendship.friend.id == thisUser.id %}
+                <tr>
+                  <td>{{ friendship.user.alias }}</td>
+                  <td>
+                    <form action="{% url 'friends:remove' %}" method="POST">
+                    {% csrf_token %}
+                      <a class="btn btn-link" href="{% url 'friends:show' friendship.user.id %}">View Profile</a>
+                      <input type="hidden" name="friendship" value="{{ friendship.id }}">
+                      <input class="btn btn-link" type="submit" value="Remove as Friend">
+                    </form>
+                  </td>
+                </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+  <!-- other people section -->
+      <section>
+        <h4>Other users not on your friends list:</h4>
+        <table class="table table-bordered">
+          <thead>
+            <th>Alias</th>
+            <th>Action</th>
+          </thead>
+
+          <tbody>
+            {% for friend in friends %}
+              {% if friend.friend != thisUser %}
+                {% if friend.friendship.user != thisUser %}
+                    <tr>
+                      <td><a href="{% url 'friends:show' friend.id %}">{{ friend.friend.alias }}</a></td>
+                      <td>
+                        <form action="{% url 'friends:add' %}" method="POST">
+                          {% csrf_token %}
+                          <input type="hidden" name="user" value="{{ thisUser.id }}">
+                          <input type="hidden" name="friend" value="{{ friend.id }}">
+                          <input class="btn btn-link" type="submit" value="Add as Friend">
+                        </form>
+                      </td>
+                    </tr>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+      <!-- {% for friendship in friendships %}
+        <p>friendship:{{ friendship.id }} | friendid:{{ friendship.friend.id }} |  frndusrid:{{ friendship.friend.user.id }} | frname: {{ friendship.friend.friend.name }} | userid:{{ friendship.user.id }} | username: {{ friendship.user.name }}</p>
+      {% endfor %} -->
+    </div>
+  </body>
+</html>
